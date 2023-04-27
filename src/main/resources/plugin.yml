@@ -1,0 +1,9 @@
+main: fr.syl2010.minecraft.CreativeRedstonePuzzle.CreativeRedstonePuzzlePlugin
+
+name: CreativeRedstonePuzzle
+version: 0.0.1-SNAPSHOT
+api-version: 1.19
+
+description: Redstone Management Plugin for the Creative Olympics
+
+author: Syl2010
