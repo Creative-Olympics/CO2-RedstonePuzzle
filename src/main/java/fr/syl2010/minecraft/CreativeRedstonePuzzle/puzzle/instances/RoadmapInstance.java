@@ -1,7 +1,7 @@
 package fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.instances;
 
 import java.util.Objects;
-import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.map.Roadmap;
+import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.Roadmap;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.team.GameTeam;
 
 public class RoadmapInstance {

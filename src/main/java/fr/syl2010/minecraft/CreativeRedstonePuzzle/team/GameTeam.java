@@ -6,17 +6,26 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.bukkit.ChatColor;
+import fr.syl2010.minecraft.CreativeRedstonePuzzle.serialisation.JsonMapKey;
 
 public class GameTeam {
 
+  @JsonMapKey
+  private final String    id;
+  private final ChatColor color;
+
   private final Set<UUID> members = new HashSet<>();
 
-  private final ChatColor color;
-  private String          name;
+  private String name;
 
-  GameTeam(String name, ChatColor color) {
+  GameTeam(String id, String name, ChatColor color) {
+    this.id = Objects.requireNonNull(id);
     this.name = Objects.requireNonNull(name);
     this.color = Objects.requireNonNull(color);
+  }
+
+  public String getId() {
+    return id;
   }
 
   public String getName() {
