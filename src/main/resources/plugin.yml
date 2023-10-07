@@ -7,3 +7,6 @@ api-version: 1.19
 description: Redstone Management Plugin for the Creative Olympics
 
 author: Syl2010
+
+libraries:
+  - io.github.rysefoxx.inventory:RyseInventory-Plugin:1.6.3

@@ -2,6 +2,7 @@ package fr.syl2010.minecraft.CreativeRedstonePuzzle.team;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -185,6 +186,10 @@ public class TeamManager {
   public GameTeam getTeamOf(UUID uuid) {
     String id = teamByMember.get(uuid);
     return id != null ? getTeam(id) : null;
+  }
+
+  public Map<String, GameTeam> getTeams() {
+    return Collections.unmodifiableMap(teamById);
   }
 
 }

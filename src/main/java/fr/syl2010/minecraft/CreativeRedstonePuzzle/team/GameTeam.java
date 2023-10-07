@@ -32,6 +32,10 @@ public class GameTeam {
     return name;
   }
 
+  public String getDisplayName() {
+    return color.toString() + name;
+  }
+
   void setName(String name) {
     this.name = Objects.requireNonNull(name);
   }

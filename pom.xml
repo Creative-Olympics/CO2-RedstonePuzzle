@@ -47,6 +47,13 @@
       <artifactId>jackson-databind</artifactId>
 	  <version>${jackson.version}</version>
 	</dependency>
+	
+	<dependency>
+	  <groupId>io.github.rysefoxx.inventory</groupId>
+	  <artifactId>RyseInventory-Plugin</artifactId>
+	  <version>1.6.3</version>
+	  <scope>provided</scope>
+	</dependency>
   </dependencies>
   
   <build>
@@ -65,11 +72,10 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
       </plugin>
-      
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.1</version>
+        <version>3.2.4</version>
         <configuration>
           <shadedArtifactAttached>true</shadedArtifactAttached>
 	      <shadedClassifierName>shaded</shadedClassifierName>
@@ -82,6 +88,9 @@
             <goals>
               <goal>shade</goal>
             </goals>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+            </configuration>
           </execution>
         </executions>
       </plugin>
