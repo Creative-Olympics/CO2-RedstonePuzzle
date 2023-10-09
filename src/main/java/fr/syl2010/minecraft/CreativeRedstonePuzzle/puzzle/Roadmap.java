@@ -7,22 +7,19 @@ import java.util.Objects;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Lists;
-import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.instances.RoadmapInstance;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.room.PuzzleRoom;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.room.serialization.PuzzleRoomNameDeserializer;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.room.serialization.PuzzleRoomNameSerializer;
-import fr.syl2010.minecraft.CreativeRedstonePuzzle.team.GameTeam;
-import fr.syl2010.minecraft.CreativeRedstonePuzzle.team.serialization.GameTeamIdDeserializer;
-import fr.syl2010.minecraft.CreativeRedstonePuzzle.team.serialization.GameTeamIdSerializer;
 
 public class Roadmap {
 
   @JsonSerialize(contentUsing = PuzzleRoomNameSerializer.class)
   @JsonDeserialize(contentUsing = PuzzleRoomNameDeserializer.class)
   private final List<PuzzleRoom> rooms;
-  @JsonSerialize(using = GameTeamIdSerializer.class)
-  @JsonDeserialize(using = GameTeamIdDeserializer.class)
-  private GameTeam               team = null;
+
+  public Roadmap() {
+    rooms = new ArrayList<>();
+  }
 
   public Roadmap(List<PuzzleRoom> rooms) {
     this.rooms = new ArrayList<>(rooms);
@@ -30,10 +27,6 @@ public class Roadmap {
 
   public Roadmap(PuzzleRoom... rooms) {
     this.rooms = Lists.newArrayList(rooms);
-  }
-
-  public GameTeam getTeam() {
-    return team;
   }
 
   public List<PuzzleRoom> getRooms() {
@@ -48,21 +41,12 @@ public class Roadmap {
     return rooms.get(index);
   }
 
-  public RoadmapInstance createInstance() {
-    Objects.requireNonNull(team, "A team has not been assigned to this roadmap!");
-    return new RoadmapInstance(this);
+  void clear() {
+    rooms.clear();
   }
 
   public class Spec {
     Spec() {}
-
-    public GameTeam getTeam() {
-      return team;
-    }
-
-    public void setTeam(GameTeam team) {
-      team = Objects.requireNonNull(team);
-    }
 
     public List<PuzzleRoom> getRooms() {
       return rooms;
@@ -93,6 +77,10 @@ public class Roadmap {
       Objects.checkIndex(secondIndex, rooms.size());
 
       rooms.set(firstIndex, rooms.set(secondIndex, rooms.get(firstIndex)));
+    }
+
+    public void clearRooms() {
+      clear();
     }
   }
 }

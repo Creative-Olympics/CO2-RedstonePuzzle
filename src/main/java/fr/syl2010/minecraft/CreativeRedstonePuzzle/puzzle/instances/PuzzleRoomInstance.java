@@ -5,22 +5,27 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import org.bukkit.Location;
+import org.bukkit.util.Vector;
 import com.google.common.collect.Sets;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.room.PuzzleRoom;
 
 public class PuzzleRoomInstance {
 
   private final PuzzleRoom puzzleRoom;
+  private final Location   playerSpanwpoint;
 
   private Set<String> completedSteps = new HashSet<>();
   private boolean     isCompleted    = false;
 
-  public PuzzleRoomInstance(PuzzleRoom puzzleRoom) {
+  public PuzzleRoomInstance(PuzzleRoom puzzleRoom, Location roomOrigin) {
     this.puzzleRoom = Objects.requireNonNull(puzzleRoom);
+
+    playerSpanwpoint = roomOrigin.clone().add(puzzleRoom.getStructure().getSize().divide(new Vector(2, 2, 2)));
+    playerSpanwpoint.setY(playerSpanwpoint.getWorld().getHighestBlockYAt(playerSpanwpoint.getBlockX(), playerSpanwpoint.getBlockZ()));
   }
 
   public Location getPlayerSpawnpoint() {
-    return puzzleRoom.getPlayerSpawnpoint();
+    return playerSpanwpoint.clone();
   }
 
   public boolean isCompleted() {

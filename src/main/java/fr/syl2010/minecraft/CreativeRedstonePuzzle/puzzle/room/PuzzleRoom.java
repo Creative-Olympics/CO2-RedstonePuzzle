@@ -4,8 +4,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import org.bukkit.Location;
-import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.instances.PuzzleRoomInstance;
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.structure.Structure;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.serialisation.JsonMapKey;
 
 public class PuzzleRoom {
@@ -13,27 +14,33 @@ public class PuzzleRoom {
   @JsonMapKey
   private final String name;
 
-  private Location playerSpawnpoint;
-  private boolean  shouldTeleport;
+  private NamespacedKey structurePath;
+
+  private transient Structure structure;
 
   private final Set<String> steps;
 
-  public PuzzleRoom(String name, Location playerSpawnpoint) {
+  public PuzzleRoom(String name, NamespacedKey structurePath) {
     this.name = name;
-    this.playerSpawnpoint = Objects.requireNonNull(playerSpawnpoint);
+    setStructurePath(structurePath);
     steps = new HashSet<String>();
+  }
+
+  private void setStructurePath(NamespacedKey structurePath) {
+    structure = Objects.requireNonNull(Bukkit.getStructureManager().getStructure(structurePath), "Structure not found");
+    this.structurePath = structurePath;
   }
 
   public String getName() {
     return name;
   }
 
-  public Location getPlayerSpawnpoint() {
-    return playerSpawnpoint.clone();
+  public NamespacedKey getStructurePath() {
+    return structurePath;
   }
 
-  public boolean shouldTeleport() {
-    return shouldTeleport;
+  public Structure getStructure() {
+    return structure;
   }
 
   public Set<String> getSteps() {
@@ -48,10 +55,6 @@ public class PuzzleRoom {
     return steps.size();
   }
 
-  public PuzzleRoomInstance createInstance() {
-    return new PuzzleRoomInstance(this);
-  }
-
   public class Spec {
     Spec() {}
 
@@ -59,20 +62,12 @@ public class PuzzleRoom {
       return name;
     }
 
-    public boolean shouldTeleport() {
-      return shouldTeleport;
+    public void setStructurePath(NamespacedKey newStructurePath) {
+      setStructurePath(newStructurePath);
     }
 
-    public void setShouldTeleport(boolean newShouldTeleport) {
-      shouldTeleport = newShouldTeleport;
-    }
-
-    public Location getPlayerSpawnpoint() {
-      return playerSpawnpoint;
-    }
-
-    public void setPlayerSpawnpoint(Location newSpawnpoint) {
-      playerSpawnpoint = Objects.requireNonNull(newSpawnpoint);
+    public NamespacedKey getStructurePath() {
+      return structurePath;
     }
 
     public Set<String> getSteps() {

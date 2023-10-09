@@ -2,29 +2,34 @@ package fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import javax.annotation.Nullable;
-import com.fasterxml.jackson.core.type.TypeReference;
+import org.bukkit.World;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.CreativeRedstonePuzzlePlugin;
+import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.instances.RoadmapInstance;
+import fr.syl2010.minecraft.CreativeRedstonePuzzle.team.GameTeam;
 
 public class PuzzleManager {
 
   private static final ObjectMapper MAPPER = CreativeRedstonePuzzlePlugin.createDefaultMapper();
 
-  private Map<String, Roadmap> roadmapMap;
-
   private final File saveFile;
+
+  private Roadmap                        roadmap;
+  private Map<GameTeam, RoadmapInstance> runningMaps;
 
   public PuzzleManager() {
     saveFile = new File(CreativeRedstonePuzzlePlugin.getPlugin().getDataFolder(), "puzzles.json");
+    runningMaps = new HashMap<>();
     if (!loadFile()) {
-      roadmapMap = new HashMap<>();
+      roadmap = new Roadmap();
     }
     saveInFile();
   }
@@ -33,7 +38,7 @@ public class PuzzleManager {
   private boolean loadFile() {
     if (saveFile.exists()) {
       try {
-        roadmapMap = MAPPER.readValue(saveFile, new TypeReference<Map<String, Roadmap>>() {});
+        roadmap = MAPPER.readValue(saveFile, Roadmap.class);
       } catch (IOException e) {
         throw new RuntimeException("Error while loading puzzle datas", e);
       }
@@ -45,10 +50,9 @@ public class PuzzleManager {
   }
 
   private CompletableFuture<Void> saveInFile() {
-    Map<String, Roadmap> savingMap = ImmutableMap.copyOf(roadmapMap);
     return CompletableFuture.runAsync(() -> {
       try {
-        MAPPER.writeValue(saveFile, savingMap);
+        MAPPER.writeValue(saveFile, roadmap);
       } catch (IOException e) {
         CreativeRedstonePuzzlePlugin.getPlugin().getLogger().log(Level.SEVERE, "Error while saving puzzle datas", e);
         throw new RuntimeException("Error while saving puzzle datas", e);
@@ -56,64 +60,46 @@ public class PuzzleManager {
     });
   }
 
-  public Roadmap createOrModifyRoadmap(String id, Consumer<Roadmap.Spec> roadmapModifier) {
-    Roadmap roadmap = roadmapMap.computeIfAbsent(id, intId -> new Roadmap());
+  @Nullable
+  public Roadmap modifyRoadmap(String id, Consumer<Roadmap.Spec> roadmapModifier) {
     roadmapModifier.accept(roadmap.new Spec());
-
     saveInFile();
     return roadmap;
   }
 
   @Nullable
-  public Roadmap modifyRoadmap(String id, Consumer<Roadmap.Spec> roadmapModifier) {
-    Roadmap roadmap = roadmapMap.get(id);
-    if (roadmap == null)
-      return null;
-    else {
-      roadmapModifier.accept(roadmap.new Spec());
-      saveInFile();
-      return roadmap;
-    }
+  public Roadmap getRoadmap() {
+    return roadmap;
   }
 
-  @Nullable
-  public Roadmap getRoadmap(String id) {
-    return roadmapMap.get(id);
-  }
-
-  public boolean removeRoadmap(String roadmapId) {
-    if (roadmapMap.remove(roadmapId) != null) {
-      saveInFile();
-      return true;
-    } else
-      return false;
-  }
-
-  public void clearRoadmaps() {
-    roadmapMap.clear();
+  public void clearRoadmap() {
+    roadmap.clear();
     saveInFile();
   }
 
-  public PuzzleCheckResult verifyRoadmaps() {
-    if (roadmapMap.isEmpty())
-      return PuzzleCheckResult.EMPTY_MAPS;
-
-    int puzzleCount = -1;
-    for (Roadmap roadmap : roadmapMap.values()) {
-      if (roadmap.getTeam() == null)
-        return PuzzleCheckResult.MISSING_TEAM;
-
-      if (puzzleCount < 0)
-        puzzleCount = roadmap.getRoomCount();
-      else if (puzzleCount != roadmap.getRoomCount()) {
-        return PuzzleCheckResult.UNBALANCED_MAPS;
-      }
-    }
-    return PuzzleCheckResult.APPROVED;
+  public boolean isRoadmapValid() {
+    if (roadmap.getRoomCount() == 0)
+      return false;
+    else
+      return true;
   }
 
-  public static enum PuzzleCheckResult {
-    APPROVED, EMPTY_MAPS, UNBALANCED_MAPS, MISSING_TEAM;
+  public Map<GameTeam, RoadmapInstance> generateMaps(List<GameTeam> teams) {
+    // destroying old worlds
+    for (RoadmapInstance runningMap : runningMaps.values()) {
+      World world = runningMap.getWorld();
+      if (world != null) {
+        CreativeRedstonePuzzlePlugin.getPlugin().getWorldManager().deleteWorld(world);
+      }
+    }
+
+    runningMaps = new HashMap<>();
+    // creating the new worlds
+    for (GameTeam team : teams) {
+      runningMaps.put(team, new RoadmapInstance(roadmap, team));
+    }
+
+    return Collections.unmodifiableMap(runningMaps);
   }
 
 }

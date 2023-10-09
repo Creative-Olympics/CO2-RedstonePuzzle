@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import javax.annotation.Nullable;
-import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -57,8 +57,8 @@ public class RoomManager {
     });
   }
 
-  public PuzzleRoom createRoom(String name, Location playerSpawn) {
-    PuzzleRoom newRoom = new PuzzleRoom(name, playerSpawn);
+  public PuzzleRoom createRoom(String name, NamespacedKey structurePath) {
+    PuzzleRoom newRoom = new PuzzleRoom(name, structurePath);
 
     // TODO create room event
 
