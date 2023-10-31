@@ -48,12 +48,12 @@
 	  <version>${jackson.version}</version>
 	</dependency>
 	
-	<dependency>
-	  <groupId>io.github.rysefoxx.inventory</groupId>
-	  <artifactId>RyseInventory-Plugin</artifactId>
-	  <version>1.6.3</version>
-	  <scope>provided</scope>
-	</dependency>
+<!--	<dependency>-->
+<!--	  <groupId>io.github.rysefoxx.inventory</groupId>-->
+<!--	  <artifactId>RyseInventory-Plugin</artifactId>-->
+<!--	  <version>1.6.3</version>-->
+<!--	  <scope>provided</scope>-->
+<!--	</dependency>-->
   </dependencies>
   
   <build>
@@ -71,7 +71,13 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
+          <configuration>
+		    <excludes>
+		      <exclude>**/menu/*.java</exclude>
+		    </excludes>
+		  </configuration>
       </plugin>
+      
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>

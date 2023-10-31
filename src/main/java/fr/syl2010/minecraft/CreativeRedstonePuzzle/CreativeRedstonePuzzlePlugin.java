@@ -34,9 +34,9 @@ public class CreativeRedstonePuzzlePlugin extends JavaPlugin {
 
   @Override
   public void onLoad() {
+    getDataFolder().mkdirs();
     stateManager = new StateManager(new LoadingState());
     permissionManager = new PermissionManager();
-    worldManager = new WorldManager(this);
     teamManager = new TeamManager();
     roomManager = new RoomManager();
     puzzleManager = new PuzzleManager();
@@ -44,6 +44,7 @@ public class CreativeRedstonePuzzlePlugin extends JavaPlugin {
 
   @Override
   public void onEnable() {
+    worldManager = new WorldManager(this);
     stateManager.setState(new LobbyState());
   }
 

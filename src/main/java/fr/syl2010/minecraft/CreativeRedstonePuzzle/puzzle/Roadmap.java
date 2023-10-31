@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Lists;
@@ -33,6 +34,7 @@ public class Roadmap {
     return Collections.unmodifiableList(rooms);
   }
 
+  @JsonIgnore
   public int getRoomCount() {
     return rooms.size();
   }
