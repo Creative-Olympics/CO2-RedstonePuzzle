@@ -2,9 +2,9 @@ package fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -26,8 +26,9 @@ public class PuzzleManager {
   private Map<GameTeam, RoadmapInstance> runningMaps;
 
   public PuzzleManager() {
-    saveFile = new File(CreativeRedstonePuzzlePlugin.getPlugin().getDataFolder(), "puzzles.json");
     runningMaps = new HashMap<>();
+
+    saveFile = new File(CreativeRedstonePuzzlePlugin.getPlugin().getDataFolder(), "puzzles.json");
     if (!loadFile()) {
       roadmap = new Roadmap();
     }
@@ -44,9 +45,7 @@ public class PuzzleManager {
       }
 
       return true;
-    } else {
-      return false;
-    }
+    } else return false;
   }
 
   private CompletableFuture<Void> saveInFile() {
@@ -61,7 +60,7 @@ public class PuzzleManager {
   }
 
   @Nullable
-  public Roadmap modifyRoadmap(String id, Consumer<Roadmap.Spec> roadmapModifier) {
+  public Roadmap modifyRoadmap(Consumer<Roadmap.Spec> roadmapModifier) {
     roadmapModifier.accept(roadmap.new Spec());
     saveInFile();
     return roadmap;
@@ -84,22 +83,50 @@ public class PuzzleManager {
       return true;
   }
 
-  public Map<GameTeam, RoadmapInstance> generateMaps(List<GameTeam> teams) {
-    // destroying old worlds
-    for (RoadmapInstance runningMap : runningMaps.values()) {
-      World world = runningMap.getWorld();
-      if (world != null) {
-        CreativeRedstonePuzzlePlugin.getPlugin().getWorldManager().deleteWorld(world);
+  public CompletableFuture<Map<GameTeam, RoadmapInstance>> generateMaps(Collection<GameTeam> teams) {
+    return CompletableFuture.supplyAsync(() -> {
+
+      if (!runningMaps.isEmpty()) {
+        // destroying old worlds
+        CreativeRedstonePuzzlePlugin.getPlugin().getLogger().info("Destroying old game worlds...");
+        for (RoadmapInstance runningMap : runningMaps.values()) {
+          World world = runningMap.getWorld();
+          if (world != null) {
+            CreativeRedstonePuzzlePlugin.getPlugin().getWorldManager().deleteWorld(world);
+          }
+        }
       }
-    }
 
-    runningMaps = new HashMap<>();
-    // creating the new worlds
-    for (GameTeam team : teams) {
-      runningMaps.put(team, new RoadmapInstance(roadmap, team));
-    }
+      runningMaps = new HashMap<>();
+      // creating the new worlds
 
-    return Collections.unmodifiableMap(runningMaps);
+      if (teams.isEmpty()) throw new IllegalArgumentException("Can't generate maps if no team exist");
+      CreativeRedstonePuzzlePlugin.getPlugin().getLogger().info("Creating new game worlds...");
+      for (GameTeam team : teams) {
+        runningMaps.put(team, new RoadmapInstance(roadmap, team));
+      }
+
+      return Collections.unmodifiableMap(runningMaps);
+    });
+  }
+
+  public boolean isEnded() {
+    boolean ended = false;
+
+    for (RoadmapInstance map : runningMaps.values()) {
+      if (map.isCompleted()) {
+        ended = true;
+      } else return false;
+    }
+    return ended;
+  }
+
+  public RoadmapInstance getRunningRoadmap(GameTeam team) {
+    return runningMaps.get(team);
+  }
+
+  public RoadmapInstance getRunningRoadmap(World world) {
+    return getRunningRoadmap(CreativeRedstonePuzzlePlugin.getPlugin().getWorldManager().getTeam(world));
   }
 
 }

@@ -1,8 +1,8 @@
 package fr.syl2010.minecraft.CreativeRedstonePuzzle.state;
 
 import java.util.Objects;
-
 import org.bukkit.Bukkit;
+import fr.syl2010.minecraft.CreativeRedstonePuzzle.CreativeRedstonePuzzlePlugin;
 
 public class StateManager {
 
@@ -26,10 +26,20 @@ public class StateManager {
     currentState = newState;
 
     newState.onEnter();
+
+    CreativeRedstonePuzzlePlugin.getPlugin().getLogger().info(String.format("Switch to %s state", currentState.getClass().getSimpleName()));
   }
 
   private void fireStateChangeEvent(State oldState, State newState) {
     Bukkit.getPluginManager().callEvent(new StateChangeEvent(oldState, newState));
+  }
+
+  public State getCurrentState() {
+    return currentState;
+  }
+
+  public boolean isCurrentState(Class<? extends State> stateClass) {
+    return stateClass.isAssignableFrom(currentState.getClass());
   }
 
 }

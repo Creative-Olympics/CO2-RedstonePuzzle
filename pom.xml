@@ -48,6 +48,27 @@
 	  <version>${jackson.version}</version>
 	</dependency>
 	
+	<dependency>  
+	 <groupId>cloud.commandframework</groupId>
+	 <artifactId>cloud-bukkit</artifactId>
+	 <version>1.8.4</version>
+	</dependency>
+	<!-- 
+	~    Optional: Allows you to use annotated methods
+	~    to declare commands 
+	-->
+	<dependency>  
+	 <groupId>cloud.commandframework</groupId>
+	 <artifactId>cloud-annotations</artifactId>
+	 <version>1.8.4</version>
+	</dependency>
+	
+	<dependency>
+	  <groupId>me.lucko</groupId>
+	  <artifactId>commodore</artifactId>
+	  <version>1.9</version>
+	</dependency>
+	
 <!--	<dependency>-->
 <!--	  <groupId>io.github.rysefoxx.inventory</groupId>-->
 <!--	  <artifactId>RyseInventory-Plugin</artifactId>-->
@@ -75,6 +96,13 @@
 		    <excludes>
 		      <exclude>**/menu/*.java</exclude>
 		    </excludes>
+		    <annotationProcessorPaths>
+               <path>
+                  <groupId>cloud.commandframework</groupId>
+                  <artifactId>cloud-annotations</artifactId>
+	 			  <version>1.8.4</version>
+               </path>
+            </annotationProcessorPaths>
 		  </configuration>
       </plugin>
       

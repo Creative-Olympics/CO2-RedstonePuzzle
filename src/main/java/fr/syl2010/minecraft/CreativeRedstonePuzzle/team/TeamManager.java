@@ -50,14 +50,13 @@ public class TeamManager {
 
       teamById.putAll(newMap);
       teamById.forEach((id, team) -> {
-        for (UUID member : team.getMembers())
+        for (UUID member : team.getMembers()) {
           teamByMember.put(member, id);
+        }
       });
 
       return true;
-    } else {
-      return false;
-    }
+    } else return false;
   }
 
   private CompletableFuture<Void> saveInFile() {
@@ -73,6 +72,8 @@ public class TeamManager {
   }
 
   public GameTeam createTeam(String id, String name, ChatColor color) {
+    if (teamById.containsKey(id)) throw new IllegalArgumentException("Team already exist");
+
     GameTeam newTeam = new GameTeam(id, name, color);
 
     Bukkit.getPluginManager().callEvent(new TeamEvent.TeamCreateEvent(newTeam));
@@ -186,6 +187,10 @@ public class TeamManager {
   public GameTeam getTeamOf(UUID uuid) {
     String id = teamByMember.get(uuid);
     return id != null ? getTeam(id) : null;
+  }
+
+  public int getTeamCount() {
+    return teamById.size();
   }
 
   public Map<String, GameTeam> getTeams() {

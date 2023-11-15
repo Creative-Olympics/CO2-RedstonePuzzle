@@ -58,6 +58,10 @@ public class RoomManager {
   }
 
   public PuzzleRoom createRoom(String name, NamespacedKey structurePath) {
+    if (roomByName.containsKey(name)) {
+      throw new IllegalArgumentException("Room already exist");
+    }
+
     PuzzleRoom newRoom = new PuzzleRoom(name, structurePath);
 
     // TODO create room event
