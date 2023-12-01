@@ -1,12 +1,17 @@
 package fr.syl2010.minecraft.CreativeRedstonePuzzle;
 
 import java.io.IOException;
-import java.util.UUID;
 import java.util.function.Function;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -28,7 +33,7 @@ import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.PuzzleManager;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.room.RoomManager;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.serialisation.JsonMapKeyDeserializer;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.state.StateManager;
-import fr.syl2010.minecraft.CreativeRedstonePuzzle.state.states.DisableState;
+import fr.syl2010.minecraft.CreativeRedstonePuzzle.state.states.DisablingState;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.state.states.LoadingState;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.state.states.LobbyState;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.team.TeamManager;
@@ -65,7 +70,6 @@ public class CreativeRedstonePuzzlePlugin extends JavaPlugin {
       bukkitCommandManager = new BukkitCommandManager<>(this,
         AsynchronousCommandExecutionCoordinator.<CommandSender>builder().withAsynchronousParsing().build(),
         Function.identity(), Function.identity());
-      bukkitCommandManager.registerBrigadier();
       commandRegisterer = new AnnotationParser<>(bukkitCommandManager, CommandSender.class, __ -> SimpleCommandMeta.empty());
       setupCommands();
     } catch (Exception e) {
@@ -88,16 +92,30 @@ public class CreativeRedstonePuzzlePlugin extends JavaPlugin {
   private void setupSimplePuzzle() {
     resetSetup();
     teamManager.createTeam("test", "test", ChatColor.DARK_PURPLE);
-    teamManager.addMember("test", UUID.fromString("c795c729-a406-417a-a718-e886bf37c801"));
+
     puzzleManager.modifyRoadmap(
       roadmap -> {
-        roadmap.addRoom(roomManager.createRoom("test1", NamespacedKey.fromString("creative_redstone:structures/puzzle_1")));
-        roadmap.addRoom(roomManager.createRoom("test2", NamespacedKey.fromString("creative_redstone:structures/puzzle_2")));
-        roadmap.addRoom(roomManager.createRoom("test3", NamespacedKey.fromString("creative_redstone:structures/puzzle_3")));
-        roadmap.addRoom(roomManager.createRoom("test4", NamespacedKey.fromString("creative_redstone:structures/puzzle_4")));
-        roadmap.addRoom(roomManager.createRoom("test5", NamespacedKey.fromString("creative_redstone:structures/puzzle_5")));
-        roadmap.addRoom(roomManager.createRoom("test6", NamespacedKey.fromString("creative_redstone:structures/puzzle_6")));
+        roadmap.addRoom(
+          roomManager.createRoom("test1", NamespacedKey.fromString("creative_redstone:puzzle_1"), room -> room.getSteps().add("test")));
+        roadmap.addRoom(
+          roomManager.createRoom("test2", NamespacedKey.fromString("creative_redstone:puzzle_2"), room -> room.getSteps().add("test")));
+        roadmap.addRoom(
+          roomManager.createRoom("test3", NamespacedKey.fromString("creative_redstone:puzzle_3"), room -> room.getSteps().add("test")));
+        roadmap.addRoom(
+          roomManager.createRoom("test4", NamespacedKey.fromString("creative_redstone:puzzle_4"), room -> room.getSteps().add("test")));
+        roadmap.addRoom(
+          roomManager.createRoom("test5", NamespacedKey.fromString("creative_redstone:puzzle_5"), room -> room.getSteps().add("test")));
+        roadmap.addRoom(
+          roomManager.createRoom("test6", NamespacedKey.fromString("creative_redstone:puzzle_6"), room -> room.getSteps().add("test")));
       });
+
+    Bukkit.getPluginManager().registerEvents(new Listener() {
+      @EventHandler
+      void onJoin(PlayerJoinEvent event) {
+        teamManager.addMember("test", event.getPlayer().getUniqueId());
+      }
+    }, this);
+    Bukkit.getOnlinePlayers().forEach(player -> teamManager.addMember("test", player.getUniqueId()));
   }
 
   // FIXME puzzle test POC
@@ -109,7 +127,7 @@ public class CreativeRedstonePuzzlePlugin extends JavaPlugin {
 
   @Override
   public void onDisable() {
-    stateManager.setState(new DisableState());
+    stateManager.setState(new DisablingState());
   }
 
   public void registerCommand(Object command) {
@@ -142,6 +160,9 @@ public class CreativeRedstonePuzzlePlugin extends JavaPlugin {
 
   public static ObjectMapper createDefaultMapper() {
     return new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
+      .setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
+      .setVisibility(PropertyAccessor.GETTER, Visibility.NONE)
+      .findAndRegisterModules()
       .registerModule(
         new SimpleModule()
           .setDeserializerModifier(new BeanDeserializerModifier() {

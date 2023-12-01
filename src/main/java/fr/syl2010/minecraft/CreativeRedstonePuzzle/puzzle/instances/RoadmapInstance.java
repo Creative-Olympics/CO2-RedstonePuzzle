@@ -20,7 +20,7 @@ import fr.syl2010.minecraft.CreativeRedstonePuzzle.team.GameTeam;
 
 public class RoadmapInstance {
 
-  private static final int SPACE_BETWEEN_ROOMS = 5;
+  private static final int SPACE_BETWEEN_ROOMS = 15;
 
   private final GameTeam team;
 
@@ -43,6 +43,8 @@ public class RoadmapInstance {
     rooms = new ArrayList<>(roomModels.size());
 
     for (PuzzleRoom roomModel : roadmap.getRooms()) {
+      if (roomModel.getSteps().isEmpty()) throw new IllegalArgumentException("Can't complete a room without any step!");
+
       roomModel.getStructure().place(roomGenLocation, true, StructureRotation.NONE, Mirror.NONE, 0, 1, ThreadLocalRandom.current());
       PuzzleRoomInstance room = new PuzzleRoomInstance(roomModel, roomGenLocation);
       rooms.add(room);
@@ -80,8 +82,10 @@ public class RoadmapInstance {
       for (UUID member : team.getMembers()) {
         Player player = Bukkit.getPlayer(member);
         if (player != null) {
-          world.getNearbyEntities(player.getLocation(), 3, 3, 3, entity -> entity.getType() == EntityType.DROPPED_ITEM)
-            .forEach(Entity::remove);
+          if (currentRoomIndex > 0) {
+            world.getNearbyEntities(player.getLocation(), 3, 3, 3, entity -> entity.getType() == EntityType.DROPPED_ITEM)
+              .forEach(Entity::remove);
+          }
           player.getInventory().clear();
           player.teleport(room.getPlayerSpawnpoint());
         }

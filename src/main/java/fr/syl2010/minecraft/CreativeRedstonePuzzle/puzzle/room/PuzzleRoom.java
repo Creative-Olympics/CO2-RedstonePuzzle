@@ -7,6 +7,8 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.structure.Structure;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.serialisation.JsonMapKey;
 
 public class PuzzleRoom {
@@ -20,14 +22,23 @@ public class PuzzleRoom {
 
   private final Set<String> steps;
 
-  public PuzzleRoom(String name, NamespacedKey structurePath) {
+  @JsonCreator
+  PuzzleRoom(@JsonProperty("name") String name, @JsonProperty("structurePath") NamespacedKey structurePath,
+             @JsonProperty("steps") Set<String> steps) {
     this.name = name;
     setStructurePath(structurePath);
-    steps = new HashSet<String>();
+    this.steps = new HashSet<>(steps);
+  }
+
+  PuzzleRoom(String name, NamespacedKey structurePath) {
+    this.name = name;
+    setStructurePath(structurePath);
+    this.steps = new HashSet<>();
   }
 
   private void setStructurePath(NamespacedKey structurePath) {
-    structure = Objects.requireNonNull(Bukkit.getStructureManager().getStructure(structurePath), "Structure not found");
+    this.structure = Objects.requireNonNull(Bukkit.getStructureManager().loadStructure(structurePath),
+      String.format("Structure not found : %s", structurePath.toString()));
     this.structurePath = structurePath;
   }
 

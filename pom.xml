@@ -1,133 +1,136 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <groupId>fr.syl2010.minecraft</groupId>
-  <artifactId>CreativeRedstonePuzzle</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  
-  <name>CreativeRedstonePuzzle</name>
-  <description>Redstone Management Plugin for the Creative Olympics</description>
-  
-  <properties>
-    <!-- Java version & File encoding -->
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <!-- Versions Stuff -->
-    <spigot.version>1.19.4-R0.1-SNAPSHOT</spigot.version>
-    <jackson.version>2.15.1</jackson.version>
-  </properties>
-  
-  <repositories>
-    <!-- This adds the Spigot Maven repository to the build -->
-    <repository>
-        <id>spigot-repo</id>
-        <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-    </repository>
-  </repositories>
+	<groupId>fr.syl2010.minecraft</groupId>
+	<artifactId>CreativeRedstonePuzzle</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.spigotmc</groupId>
-      <artifactId>spigot-api</artifactId>
-      <version>${spigot.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.spigotmc</groupId>
-      <artifactId>spigot</artifactId>
-      <version>${spigot.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    
-	<dependency>
-	  <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-	  <version>${jackson.version}</version>
-	</dependency>
-	
-	<dependency>  
-	 <groupId>cloud.commandframework</groupId>
-	 <artifactId>cloud-bukkit</artifactId>
-	 <version>1.8.4</version>
-	</dependency>
-	<!-- 
+	<name>CreativeRedstonePuzzle</name>
+	<description>Redstone Management Plugin for the Creative Olympics</description>
+
+	<properties>
+		<!-- Java version & File encoding -->
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- Versions Stuff -->
+		<spigot.version>1.19.4-R0.1-SNAPSHOT</spigot.version>
+		<jackson.version>2.15.1</jackson.version>
+	</properties>
+
+	<repositories>
+		<!-- This adds the Spigot Maven repository to the build -->
+		<repository>
+			<id>spigot-repo</id>
+			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>spigot-api</artifactId>
+			<version>${spigot.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>spigot</artifactId>
+			<version>${spigot.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>com.fasterxml.jackson.module</groupId>
+		    <artifactId>jackson-module-parameter-names</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>cloud.commandframework</groupId>
+			<artifactId>cloud-bukkit</artifactId>
+			<version>1.8.4</version>
+		</dependency>
+
+		<!-- 
 	~    Optional: Allows you to use annotated methods
 	~    to declare commands 
 	-->
-	<dependency>  
-	 <groupId>cloud.commandframework</groupId>
-	 <artifactId>cloud-annotations</artifactId>
-	 <version>1.8.4</version>
-	</dependency>
-	
-	<dependency>
-	  <groupId>me.lucko</groupId>
-	  <artifactId>commodore</artifactId>
-	  <version>1.9</version>
-	</dependency>
-	
-<!--	<dependency>-->
-<!--	  <groupId>io.github.rysefoxx.inventory</groupId>-->
-<!--	  <artifactId>RyseInventory-Plugin</artifactId>-->
-<!--	  <version>1.6.3</version>-->
-<!--	  <scope>provided</scope>-->
-<!--	</dependency>-->
-  </dependencies>
-  
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.1.0</version>
-        <configuration>
-          <encoding>UTF-8</encoding>
-        </configuration>
-      </plugin>
+		<dependency>
+			<groupId>cloud.commandframework</groupId>
+			<artifactId>cloud-annotations</artifactId>
+			<version>1.8.4</version>
+		</dependency>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
-          <configuration>
-		    <excludes>
-		      <exclude>**/menu/*.java</exclude>
-		    </excludes>
-		    <annotationProcessorPaths>
-               <path>
-                  <groupId>cloud.commandframework</groupId>
-                  <artifactId>cloud-annotations</artifactId>
-	 			  <version>1.8.4</version>
-               </path>
-            </annotationProcessorPaths>
-		  </configuration>
-      </plugin>
-      
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.4</version>
-        <configuration>
-          <shadedArtifactAttached>true</shadedArtifactAttached>
-	      <shadedClassifierName>shaded</shadedClassifierName>
- 	      <outputDirectory>server/plugins/</outputDirectory>
-          <minimizeJar>false</minimizeJar>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
+		<!--	<dependency>-->
+		<!--	  <groupId>io.github.rysefoxx.inventory</groupId>-->
+		<!--	  <artifactId>RyseInventory-Plugin</artifactId>-->
+		<!--	  <version>1.6.3</version>-->
+		<!--	  <scope>provided</scope>-->
+		<!--	</dependency>-->
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<excludes>
+						<exclude>**/menu/*.java</exclude>
+					</excludes>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>cloud.commandframework</groupId>
+							<artifactId>cloud-annotations</artifactId>
+							<version>1.8.4</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.5.1</version>
+				<configuration>
+					<shadedArtifactAttached>true</shadedArtifactAttached>
+					<shadedClassifierName>shaded</shadedClassifierName>
+					<outputDirectory>server/plugins/</outputDirectory>
+					<minimizeJar>false</minimizeJar>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
   </build>
 </project>

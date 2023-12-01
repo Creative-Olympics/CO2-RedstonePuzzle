@@ -1,6 +1,8 @@
 package fr.syl2010.minecraft.CreativeRedstonePuzzle.state.states;
 
 import java.util.ListIterator;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -16,6 +18,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.CreativeRedstonePuzzlePlugin;
+import fr.syl2010.minecraft.CreativeRedstonePuzzle.Utils;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.instances.PuzzleRoomInstance;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.instances.RoadmapInstance;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.state.State;
@@ -31,10 +34,20 @@ public class PlayingState implements State, Listener {
       .getPuzzleManager()
       .generateMaps(CreativeRedstonePuzzlePlugin.getPlugin().getTeamManager().getTeams().values())
       .thenAccept(runningMaps -> {
-        // TODO re-sync teleport thread?
         Bukkit.broadcastMessage("§aTeleporting...");
-        runningMaps.forEach((team, map) -> map.teleportToNextRoom());
+        try {
+          if (!Utils.iterateThroughTicks(runningMaps.values(), RoadmapInstance::teleportToNextRoom, 5, TimeUnit.SECONDS,
+            CreativeRedstonePuzzlePlugin.getPlugin()))
+            throw new RuntimeException("A team teleporation took too much time");
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
         Bukkit.broadcastMessage("§aGame started!");
+      })
+      .exceptionally(exception -> {
+        CreativeRedstonePuzzlePlugin.getPlugin().getLogger().log(Level.SEVERE, "exception while generating", exception);
+        Bukkit.broadcastMessage("§cError while generating...");
+        return null;
       });
     Bukkit.broadcastMessage("§aGenerating Map...");
   }

@@ -35,7 +35,6 @@ public class TeamManager {
     saveInFile();
   }
 
-  // FIXME test GameTeam loading and saving
   private boolean loadFile() {
     if (saveFile.exists()) {
 

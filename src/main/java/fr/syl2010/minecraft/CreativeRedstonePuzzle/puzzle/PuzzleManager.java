@@ -7,13 +7,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import javax.annotation.Nullable;
 import org.bukkit.World;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.CreativeRedstonePuzzlePlugin;
+import fr.syl2010.minecraft.CreativeRedstonePuzzle.Utils;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.instances.RoadmapInstance;
+import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.room.PuzzleRoom;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.team.GameTeam;
 
 public class PuzzleManager {
@@ -35,7 +38,6 @@ public class PuzzleManager {
     saveInFile();
   }
 
-  // FIXME test Roadmap loading and saving
   private boolean loadFile() {
     if (saveFile.exists()) {
       try {
@@ -76,15 +78,23 @@ public class PuzzleManager {
     saveInFile();
   }
 
-  public boolean isRoadmapValid() {
+  public roadmapCheckResult isRoadmapValid() {
     if (roadmap.getRoomCount() == 0)
-      return false;
-    else
-      return true;
+      return roadmapCheckResult.EMPTY;
+    else {
+      for (PuzzleRoom room : roadmap.getRooms()) {
+        if (room.getSteps().isEmpty()) return roadmapCheckResult.MISSING_STEP;
+      }
+      return roadmapCheckResult.SUCCESS;
+    }
   }
 
-  public CompletableFuture<Map<GameTeam, RoadmapInstance>> generateMaps(Collection<GameTeam> teams) {
-    return CompletableFuture.supplyAsync(() -> {
+  public static enum roadmapCheckResult {
+    SUCCESS, EMPTY, MISSING_STEP;
+  }
+
+  public CompletableFuture<Void> deleteWorlds() {
+    return CompletableFuture.runAsync(() -> {
 
       if (!runningMaps.isEmpty()) {
         // destroying old worlds
@@ -95,15 +105,22 @@ public class PuzzleManager {
             CreativeRedstonePuzzlePlugin.getPlugin().getWorldManager().deleteWorld(world);
           }
         }
+        runningMaps = new HashMap<>();
       }
+    });
+  }
 
-      runningMaps = new HashMap<>();
+  public CompletableFuture<Map<GameTeam, RoadmapInstance>> generateMaps(Collection<GameTeam> teams) {
+    return deleteWorlds().thenApplyAsync(__ -> {
       // creating the new worlds
-
       if (teams.isEmpty()) throw new IllegalArgumentException("Can't generate maps if no team exist");
       CreativeRedstonePuzzlePlugin.getPlugin().getLogger().info("Creating new game worlds...");
-      for (GameTeam team : teams) {
-        runningMaps.put(team, new RoadmapInstance(roadmap, team));
+      try {
+        if (!Utils.iterateThroughTicks(teams, team -> runningMaps.put(team, new RoadmapInstance(roadmap, team)), 30, TimeUnit.SECONDS,
+          CreativeRedstonePuzzlePlugin.getPlugin()))
+          throw new RuntimeException("A world took too much time to generate");
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
       }
 
       return Collections.unmodifiableMap(runningMaps);

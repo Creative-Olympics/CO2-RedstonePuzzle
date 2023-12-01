@@ -1,9 +1,11 @@
 package fr.syl2010.minecraft.CreativeRedstonePuzzle;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.Material;
@@ -33,7 +35,7 @@ public class WorldManager implements Listener {
       throw new IllegalArgumentException(String.format("This world is already about to generate : %s", worldName));
 
     World world = Bukkit.createWorld(WorldCreator.name(worldName)
-      .environment(Environment.CUSTOM)
+      .environment(Environment.NORMAL)
       .generateStructures(false)
       .type(WorldType.FLAT)
       .generator(new ChunkGenerator() {}));
@@ -44,9 +46,14 @@ public class WorldManager implements Listener {
   }
 
   public void deleteWorld(World world) {
-    if (!Bukkit.unloadWorld(world, false) || !world.getWorldFolder().delete())
-      throw new RuntimeException(String.format("Unable to delete a team world : %s", world.getName()));
+    if (!Bukkit.unloadWorld(world, false))
+      throw new RuntimeException(String.format("Unable to unload a team world : %s", world.getName()));
 
+    try {
+      FileUtils.deleteDirectory(world.getWorldFolder());
+    } catch (IOException e) {
+      throw new RuntimeException(String.format("Unable to delete a team world : %s", world.getName()), e);
+    }
     teamByWorld.remove(world);
   }
 
@@ -60,6 +67,7 @@ public class WorldManager implements Listener {
       World world = event.getWorld();
       world.setKeepSpawnInMemory(false);
       world.setSpawnLocation(0, 0, 0);
+      world.setPVP(false);
 
       world.setGameRule(GameRule.SPAWN_RADIUS, 0);
       world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
@@ -82,6 +90,7 @@ public class WorldManager implements Listener {
   public void setupLobbyWorld() {
     World world = getLobbyWorld();
     world.setSpawnLocation(0, 0, 0);
+    world.setPVP(false);
 
     world.setGameRule(GameRule.SPAWN_RADIUS, 0);
     world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);

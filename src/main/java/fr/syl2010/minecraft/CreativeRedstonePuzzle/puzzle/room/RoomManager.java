@@ -29,7 +29,6 @@ public class RoomManager {
     saveInFile();
   }
 
-  // FIXME test PuzzleRoom loading and saving
   private boolean loadFile() {
     if (saveFile.exists()) {
 
@@ -40,9 +39,7 @@ public class RoomManager {
       }
 
       return true;
-    } else {
-      return false;
-    }
+    } else return false;
   }
 
   private CompletableFuture<Void> saveInFile() {
@@ -57,12 +54,11 @@ public class RoomManager {
     });
   }
 
-  public PuzzleRoom createRoom(String name, NamespacedKey structurePath) {
-    if (roomByName.containsKey(name)) {
-      throw new IllegalArgumentException("Room already exist");
-    }
+  public PuzzleRoom createRoom(String name, NamespacedKey structurePath, Consumer<PuzzleRoom.Spec> modifier) {
+    if (roomByName.containsKey(name)) throw new IllegalArgumentException("Room already exist");
 
     PuzzleRoom newRoom = new PuzzleRoom(name, structurePath);
+    modifier.accept(newRoom.new Spec());
 
     // TODO create room event
 
@@ -90,6 +86,7 @@ public class RoomManager {
 
     while (roomIterator.hasNext()) {
       // TODO remove room event
+      roomIterator.next();
       roomIterator.remove();
     }
 

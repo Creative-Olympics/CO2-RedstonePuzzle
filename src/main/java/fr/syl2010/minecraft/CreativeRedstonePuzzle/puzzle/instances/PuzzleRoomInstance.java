@@ -26,7 +26,7 @@ public class PuzzleRoomInstance {
     this.puzzleRoom = Objects.requireNonNull(puzzleRoom);
 
     playerSpanwpoint = roomOrigin.clone().add(puzzleRoom.getStructure().getSize().divide(new Vector(2, 2, 2)));
-    playerSpanwpoint.setY(playerSpanwpoint.getWorld().getHighestBlockYAt(playerSpanwpoint.getBlockX(), playerSpanwpoint.getBlockZ()));
+    playerSpanwpoint.setY(playerSpanwpoint.getWorld().getHighestBlockYAt(playerSpanwpoint.getBlockX(), playerSpanwpoint.getBlockZ()) + 1);
   }
 
   public Location getPlayerSpawnpoint() {
@@ -67,9 +67,8 @@ public class PuzzleRoomInstance {
       return StepResult.ALREADY_COMPLETED_ROOM;
 
     triggeredBlocks.computeIfAbsent(step, __ -> Sets.newHashSet()).add(commandBlock);
-    if (commandBlock.isBlockPowered()) {
-      return completeStep(step);
-    } else {
+    if (commandBlock.isBlockPowered()) return completeStep(step);
+    else {
       completedSteps.remove(step);
       return StepResult.NOT_POWERED_STEP;
     }

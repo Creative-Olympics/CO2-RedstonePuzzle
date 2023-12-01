@@ -14,7 +14,9 @@ import org.bukkit.entity.Player;
 import cloud.commandframework.annotations.Argument;
 import cloud.commandframework.annotations.CommandMethod;
 import cloud.commandframework.annotations.suggestions.Suggestions;
+import cloud.commandframework.context.CommandContext;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.CreativeRedstonePuzzlePlugin;
+import fr.syl2010.minecraft.CreativeRedstonePuzzle.Utils;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.WorldManager;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.PuzzleManager;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.instances.PuzzleRoomInstance;
@@ -37,7 +39,7 @@ public class PuzzleStepCommand {
   }
 
   @Suggestions("step")
-  public List<String> stepSuggestion(CommandSender sender, String input) {
+  public List<String> stepSuggestion(CommandContext<CommandSender> sender, String input) {
     World world;
     if (sender instanceof BlockCommandSender blockSender) {
       world = blockSender.getBlock().getWorld();
@@ -100,28 +102,34 @@ public class PuzzleStepCommand {
           message = "§aStep completed";
           break;
         case COMPLETED_ROOM:
-          if (!roadmap.teleportToNextRoom()) {
-            sender.sendMessage("§a§lMap completed!");
+          try {
+            if (!Utils.syncAndAwait(() -> roadmap.teleportToNextRoom(), CreativeRedstonePuzzlePlugin.getPlugin())) {
+              sender.sendMessage("§a§lMap completed!");
 
-            // TODO proper team win
-            for (UUID member : roadmap.getTeam().getMembers()) {
-              Player player = Bukkit.getPlayer(member);
-              if (player != null) {
-                world.getNearbyEntities(player.getLocation(), 3, 3, 3, intEntity -> intEntity.getType() == EntityType.DROPPED_ITEM)
-                  .forEach(Entity::remove);
-                player.getInventory().clear();
-                player.teleport(worldManager.getLobbyWorld().getSpawnLocation());
-              }
-            }
-            Bukkit.broadcastMessage(String.format("§2Team %s has completed all their puzzles", roadmap.getTeam().getDisplayName()));
+              Bukkit.getScheduler().runTask(CreativeRedstonePuzzlePlugin.getPlugin(), () -> {
+                // TODO proper team win
+                for (UUID member : roadmap.getTeam().getMembers()) {
+                  Player player = Bukkit.getPlayer(member);
+                  if (player != null) {
+                    world.getNearbyEntities(player.getLocation(), 3, 3, 3, intEntity -> intEntity.getType() == EntityType.DROPPED_ITEM)
+                      .forEach(Entity::remove);
+                    player.getInventory().clear();
+                    player.teleport(worldManager.getLobbyWorld().getSpawnLocation());
+                  }
+                }
+                Bukkit.broadcastMessage(String.format("§2Team %s has completed all their puzzles", roadmap.getTeam().getDisplayName()));
 
-            // detect if all map finished
-            if (puzzleManager.isEnded()) {
-              Bukkit.getScheduler().runTask(CreativeRedstonePuzzlePlugin.getPlugin(), () -> stateManager.setState(new EndingState()));
+                // detect if all map finished
+                if (puzzleManager.isEnded()) {
+                  stateManager.setState(new EndingState());
+                }
+              });
+              return;
+            } else {
+              message = "§aRoom completed";
             }
-            return;
-          } else {
-            message = "§aRoom completed";
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
           }
           break;
         default:
