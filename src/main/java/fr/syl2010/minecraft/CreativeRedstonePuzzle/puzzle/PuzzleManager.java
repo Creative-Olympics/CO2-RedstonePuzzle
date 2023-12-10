@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.bukkit.World;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.CreativeRedstonePuzzlePlugin;
@@ -95,16 +96,10 @@ public class PuzzleManager {
 
   public CompletableFuture<Void> deleteWorlds() {
     return CompletableFuture.runAsync(() -> {
-
       if (!runningMaps.isEmpty()) {
-        // destroying old worlds
-        CreativeRedstonePuzzlePlugin.getPlugin().getLogger().info("Destroying old game worlds...");
-        for (RoadmapInstance runningMap : runningMaps.values()) {
-          World world = runningMap.getWorld();
-          if (world != null) {
-            CreativeRedstonePuzzlePlugin.getPlugin().getWorldManager().deleteWorld(world);
-          }
-        }
+        // destroying old world
+        CreativeRedstonePuzzlePlugin.getPlugin().getLogger().info("Destroying old game world...");
+        CreativeRedstonePuzzlePlugin.getPlugin().getWorldManager().deleteGameWorld();
         runningMaps = new HashMap<>();
       }
     });
@@ -112,14 +107,22 @@ public class PuzzleManager {
 
   public CompletableFuture<Map<GameTeam, RoadmapInstance>> generateMaps(Collection<GameTeam> teams) {
     return deleteWorlds().thenApplyAsync(__ -> {
-      // creating the new worlds
+      // creating the new world
       if (teams.isEmpty()) throw new IllegalArgumentException("Can't generate maps if no team exist");
-      CreativeRedstonePuzzlePlugin.getPlugin().getLogger().info("Creating new game worlds...");
+      CreativeRedstonePuzzlePlugin.getPlugin().getLogger().info("Creating new game world...");
+      World world = CreativeRedstonePuzzlePlugin.getPlugin().getWorldManager().generateGameWorld();
+
+      CreativeRedstonePuzzlePlugin.getPlugin().getLogger().info("Generating puzzles...");
       try {
-        if (!Utils.iterateThroughTicks(teams, team -> runningMaps.put(team, new RoadmapInstance(roadmap, team)), 30, TimeUnit.SECONDS,
-          CreativeRedstonePuzzlePlugin.getPlugin()))
-          throw new RuntimeException("A world took too much time to generate");
+        MutableInt index = new MutableInt(0);
+        if (!Utils.iterateThroughTicks(teams,
+          team -> runningMaps.put(team, new RoadmapInstance(roadmap, team, world, index.getAndIncrement())),
+          10, TimeUnit.SECONDS, CreativeRedstonePuzzlePlugin.getPlugin())) {
+          runningMaps.clear();
+          throw new RuntimeException("A puzzle took too much time to generate");
+        }
       } catch (InterruptedException e) {
+        runningMaps.clear();
         throw new RuntimeException(e);
       }
 
@@ -140,10 +143,6 @@ public class PuzzleManager {
 
   public RoadmapInstance getRunningRoadmap(GameTeam team) {
     return runningMaps.get(team);
-  }
-
-  public RoadmapInstance getRunningRoadmap(World world) {
-    return getRunningRoadmap(CreativeRedstonePuzzlePlugin.getPlugin().getWorldManager().getTeam(world));
   }
 
 }

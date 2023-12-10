@@ -13,7 +13,6 @@ import org.bukkit.block.structure.StructureRotation;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import fr.syl2010.minecraft.CreativeRedstonePuzzle.CreativeRedstonePuzzlePlugin;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.Roadmap;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.puzzle.room.PuzzleRoom;
 import fr.syl2010.minecraft.CreativeRedstonePuzzle.team.GameTeam;
@@ -21,24 +20,22 @@ import fr.syl2010.minecraft.CreativeRedstonePuzzle.team.GameTeam;
 public class RoadmapInstance {
 
   private static final int SPACE_BETWEEN_ROOMS = 15;
+  private static final int SPACE_BETWEEN_TEAMS = 500;
 
   private final GameTeam team;
 
-  private final World                    world;
   private final List<PuzzleRoomInstance> rooms;
 
   private int                currentRoomIndex = -1;
   private PuzzleRoomInstance currentRoom      = null;
 
-  public RoadmapInstance(Roadmap roadmap, GameTeam team) {
+  public RoadmapInstance(Roadmap roadmap, GameTeam team, World world, int index) {
     this.team = Objects.requireNonNull(team);
 
-    world = CreativeRedstonePuzzlePlugin.getPlugin().getWorldManager().generateTeamWorld(team);
-
-    Location roomGenLocation = new Location(world, 0, 0, 0);
+    Location roomGenLocation = new Location(world, SPACE_BETWEEN_TEAMS * index, 0, 0);
 
     List<PuzzleRoom> roomModels = roadmap.getRooms();
-    if (roomModels.isEmpty()) throw new IllegalArgumentException("Can't generate a map if no room is assigned");
+    if (roomModels.isEmpty()) throw new IllegalArgumentException("Can't generate puzzles if no room is assigned");
 
     rooms = new ArrayList<>(roomModels.size());
 
@@ -61,10 +58,6 @@ public class RoadmapInstance {
     return team;
   }
 
-  public World getWorld() {
-    return world;
-  }
-
   public PuzzleRoomInstance getCurrentRoom() {
     return currentRoom;
   }
@@ -83,7 +76,8 @@ public class RoadmapInstance {
         Player player = Bukkit.getPlayer(member);
         if (player != null) {
           if (currentRoomIndex > 0) {
-            world.getNearbyEntities(player.getLocation(), 3, 3, 3, entity -> entity.getType() == EntityType.DROPPED_ITEM)
+            player.getWorld()
+              .getNearbyEntities(player.getLocation(), 3, 3, 3, entity -> entity.getType() == EntityType.DROPPED_ITEM)
               .forEach(Entity::remove);
           }
           player.getInventory().clear();

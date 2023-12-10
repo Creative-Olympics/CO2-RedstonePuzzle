@@ -83,7 +83,7 @@ public class CreativeRedstonePuzzlePlugin extends JavaPlugin {
   }
 
   private void setupCommands() {
-    registerCommand(new PuzzleStepCommand(stateManager, puzzleManager, worldManager));
+    registerCommand(new PuzzleStepCommand(stateManager, teamManager, puzzleManager, worldManager));
     registerCommand(new PuzzleStartCommand(stateManager));
     registerCommand(new PuzzleResetCommand(stateManager));
   }

@@ -1,9 +1,7 @@
 package fr.syl2010.minecraft.CreativeRedstonePuzzle;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
@@ -17,32 +15,36 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.generator.ChunkGenerator;
-import fr.syl2010.minecraft.CreativeRedstonePuzzle.team.GameTeam;
 
 public class WorldManager implements Listener {
 
-  private final Set<String>          expectedWorlds = new HashSet<>();
-  private final Map<World, GameTeam> teamByWorld    = new HashMap<>();
+  private final Set<String> expectedWorlds = new HashSet<>();
+  private World             gameWorld;
 
   public WorldManager(CreativeRedstonePuzzlePlugin plugin) {
     Bukkit.getPluginManager().registerEvents(this, plugin);
   }
 
-  public World generateTeamWorld(GameTeam team) {
-    String worldName = String.format("%s_map", team.getId());
+  public World generateGameWorld() {
+    String worldName = String.format("game_world");
 
     if (!expectedWorlds.add(worldName))
       throw new IllegalArgumentException(String.format("This world is already about to generate : %s", worldName));
 
-    World world = Bukkit.createWorld(WorldCreator.name(worldName)
+    gameWorld = Bukkit.createWorld(WorldCreator.name(worldName)
       .environment(Environment.NORMAL)
       .generateStructures(false)
       .type(WorldType.FLAT)
       .generator(new ChunkGenerator() {}));
 
-    teamByWorld.put(world, team);
+    return gameWorld;
+  }
 
-    return world;
+  public boolean deleteGameWorld() {
+    if (gameWorld != null) {
+      deleteWorld(gameWorld);
+      return true;
+    } else return false;
   }
 
   public void deleteWorld(World world) {
@@ -54,11 +56,10 @@ public class WorldManager implements Listener {
     } catch (IOException e) {
       throw new RuntimeException(String.format("Unable to delete a team world : %s", world.getName()), e);
     }
-    teamByWorld.remove(world);
-  }
 
-  public GameTeam getTeam(World world) {
-    return teamByWorld.get(world);
+    if (world == gameWorld) {
+      gameWorld = null;
+    }
   }
 
   @EventHandler
@@ -85,6 +86,10 @@ public class WorldManager implements Listener {
 
   public World getLobbyWorld() {
     return Bukkit.getWorlds().get(0);
+  }
+
+  public World getGameWorld() {
+    return gameWorld;
   }
 
   public void setupLobbyWorld() {
